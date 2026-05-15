@@ -1,29 +1,29 @@
-// App.jsx
+// src/App.jsx
 
 import { useState } from "react";
+
 import { Pencil, Trash2, Check } from "lucide-react";
+
+import { useDispatch, useSelector } from "react-redux";
+
+import {
+  addTask,
+  deleteTask,
+  toggleComplete,
+  editTask,
+} from "./features/taskSlice";
 
 export default function App() {
   const [taskName, setTaskName] = useState("");
   const [taskDesc, setTaskDesc] = useState("");
 
-  const [tasks, setTasks] = useState([
-    {
-      title: "FINALS PROJECT",
-      desc: "Mobile App",
-      time: "10:00am",
-      completed: true,
-    },
-    {
-      title: "FINALS ACTIVITY",
-      desc: "API App",
-      time: "11:59 pm",
-      completed: false,
-    },
-  ]);
+  const dispatch = useDispatch();
 
-  // ADD TASK
-  const addTask = () => {
+  const tasks = useSelector(
+    (state) => state.tasks.taskList
+  );
+
+  const handleAddTask = () => {
     if (!taskName.trim() || !taskDesc.trim()) return;
 
     const newTask = {
@@ -36,45 +36,10 @@ export default function App() {
       completed: false,
     };
 
-    setTasks([...tasks, newTask]);
+    dispatch(addTask(newTask));
 
     setTaskName("");
     setTaskDesc("");
-  };
-
-  // TOGGLE COMPLETE
-  const toggleComplete = (index) => {
-    const updatedTasks = [...tasks];
-
-    updatedTasks[index].completed =
-      !updatedTasks[index].completed;
-
-    setTasks(updatedTasks);
-  };
-
-  // DELETE TASK
-  const deleteTask = (index) => {
-    const updatedTasks = tasks.filter(
-      (_, i) => i !== index
-    );
-
-    setTasks(updatedTasks);
-  };
-
-  // EDIT TASK
-  const editTask = (index) => {
-    const newTitle = prompt(
-      "Edit task title:",
-      tasks[index].title
-    );
-
-    if (!newTitle) return;
-
-    const updatedTasks = [...tasks];
-
-    updatedTasks[index].title = newTitle;
-
-    setTasks(updatedTasks);
   };
 
   return (
@@ -119,7 +84,7 @@ export default function App() {
 
           {/* BUTTON */}
           <button
-            onClick={addTask}
+            onClick={handleAddTask}
             className="w-full h-11 rounded-full bg-[#C8640C] text-white text-2xl font-bold hover:scale-[1.01] transition"
           >
             Add Task
@@ -145,10 +110,9 @@ export default function App() {
                 >
                   {/* LEFT */}
                   <div className="flex items-start gap-4">
-                    {/* CHECK BUTTON */}
                     <button
                       onClick={() =>
-                        toggleComplete(index)
+                        dispatch(toggleComplete(index))
                       }
                       className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                         task.completed
@@ -183,18 +147,30 @@ export default function App() {
                     </div>
 
                     <div className="flex gap-3">
-                      {/* EDIT */}
                       <button
-                        onClick={() => editTask(index)}
+                        onClick={() => {
+                          const newTitle = prompt(
+                            "Edit task title:",
+                            task.title
+                          );
+
+                          if (!newTitle) return;
+
+                          dispatch(
+                            editTask({
+                              index,
+                              title: newTitle,
+                            })
+                          );
+                        }}
                         className="w-11 h-11 rounded-full bg-white flex items-center justify-center"
                       >
                         <Pencil size={20} />
                       </button>
 
-                      {/* DELETE */}
                       <button
                         onClick={() =>
-                          deleteTask(index)
+                          dispatch(deleteTask(index))
                         }
                         className="w-11 h-11 rounded-full bg-white flex items-center justify-center"
                       >
@@ -207,7 +183,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* CAPI IMAGE */}
+          {/* IMAGE */}
           <img
             src="/capi.png"
             alt="capi"
